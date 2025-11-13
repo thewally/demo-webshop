@@ -41,6 +41,17 @@
           id="basketList"
           aria-label="Shopping basket items"
         ></ul>
+        <div class="smoothie-option" id="smoothieOption" style="display: none;">
+          <label class="smoothie-checkbox-label">
+            <input
+              type="checkbox"
+              id="smoothieCheckbox"
+              aria-label="Blend fruits into a smoothie"
+            />
+            <span class="smoothie-text">Blend fruits into a smoothie</span>
+          </label>
+          <div class="smoothie-info" id="smoothieInfo" aria-live="polite"></div>
+        </div>
         <div class="cart-buttons-row" role="group" aria-label="Basket actions">
           <button id="clearBasket" aria-label="Clear all items from basket">
             Clear Basket
@@ -66,10 +77,55 @@
     </footer>
     <script src="shop.js"></script>
     <script>
+      function updateSmoothieOption() {
+        const basket = getBasket();
+        const smoothieOption = document.getElementById("smoothieOption");
+        const smoothieInfo = document.getElementById("smoothieInfo");
+        const smoothieCheckbox = document.getElementById("smoothieCheckbox");
+        
+        const basketEntries = Object.entries(basket).filter(([product, quantity]) => {
+          const item = PRODUCTS[product];
+          return item && quantity > 0;
+        });
+        
+        if (basketEntries.length === 0) {
+          smoothieOption.style.display = "none";
+          return;
+        }
+        
+        smoothieOption.style.display = "block";
+        
+        // Determine smoothie type
+        const uniqueFruits = basketEntries.length;
+        const fruitNames = basketEntries.map(([product]) => PRODUCTS[product].name);
+        
+        smoothieCheckbox.onchange = function() {
+          if (smoothieCheckbox.checked) {
+            if (uniqueFruits === 1) {
+              smoothieInfo.textContent = `🥤 Single flavor: ${fruitNames[0]} smoothie`;
+            } else {
+              smoothieInfo.textContent = `🥤 Multi-flavor blended smoothie: ${fruitNames.join(", ")}`;
+            }
+            smoothieInfo.style.display = "block";
+          } else {
+            smoothieInfo.textContent = "";
+            smoothieInfo.style.display = "none";
+          }
+        };
+        
+        // Reset checkbox when basket changes
+        smoothieCheckbox.checked = false;
+        smoothieInfo.textContent = "";
+        smoothieInfo.style.display = "none";
+      }
+      
       renderBasket();
+      updateSmoothieOption();
+      
       document.getElementById("clearBasket").onclick = function () {
         clearBasket();
         renderBasket();
+        updateSmoothieOption();
       };
     </script>
   </body>
