@@ -353,3 +353,40 @@ footer a {
   color: green;
   margin-top: 1rem;
 }
+
+.smoothie-option {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f7faff;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.smoothie-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 500;
+  gap: 0.8rem;
+}
+
+.smoothie-checkbox-label input[type="checkbox"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  accent-color: #e53935;
+}
+
+.smoothie-text {
+  user-select: none;
+}
+
+.smoothie-info {
+  margin-top: 0.8rem;
+  font-size: 1.1rem;
+  color: #2e7d32;
+  font-weight: 500;
+  display: none;
+}
