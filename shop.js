@@ -8,18 +8,29 @@ const PRODUCTS = {
 function getBasket() {
   try {
     const basket = localStorage.getItem("basket");
-    if (!basket) return [];
+    if (!basket) return {};
     const parsed = JSON.parse(basket);
-    return Array.isArray(parsed) ? parsed : [];
+    // Handle migration from old array format to new object format
+    if (Array.isArray(parsed)) {
+      const grouped = {};
+      parsed.forEach((product) => {
+        grouped[product] = (grouped[product] || 0) + 1;
+      });
+      // Migrate to new format
+      localStorage.setItem("basket", JSON.stringify(grouped));
+      return grouped;
+    }
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
   } catch (error) {
     console.warn("Error parsing basket from localStorage:", error);
-    return [];
+    return {};
   }
 }
 
 function addToBasket(product) {
   const basket = getBasket();
-  basket.push(product);
+  // Increment quantity if product exists, otherwise set to 1
+  basket[product] = (basket[product] || 0) + 1;
   localStorage.setItem("basket", JSON.stringify(basket));
 }
 
@@ -33,16 +44,17 @@ function renderBasket() {
   const cartButtonsRow = document.querySelector(".cart-buttons-row");
   if (!basketList) return;
   basketList.innerHTML = "";
-  if (basket.length === 0) {
+  const basketEntries = Object.entries(basket);
+  if (basketEntries.length === 0) {
     basketList.innerHTML = "<li>No products in basket.</li>";
     if (cartButtonsRow) cartButtonsRow.style.display = "none";
     return;
   }
-  basket.forEach((product) => {
+  basketEntries.forEach(([product, quantity]) => {
     const item = PRODUCTS[product];
-    if (item) {
+    if (item && quantity > 0) {
       const li = document.createElement("li");
-      li.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${item.name}</span>`;
+      li.innerHTML = `<span class='basket-emoji'>${item.emoji}</span> <span>${quantity}x ${item.name}</span>`;
       basketList.appendChild(li);
     }
   });
@@ -59,8 +71,10 @@ function renderBasketIndicator() {
     indicator.className = "basket-indicator";
     basketLink.appendChild(indicator);
   }
-  if (basket.length > 0) {
-    indicator.textContent = basket.length;
+  // Calculate total quantity of all items
+  const totalQuantity = Object.values(basket).reduce((sum, quantity) => sum + quantity, 0);
+  if (totalQuantity > 0) {
+    indicator.textContent = totalQuantity;
     indicator.style.display = "flex";
   } else {
     indicator.style.display = "none";
